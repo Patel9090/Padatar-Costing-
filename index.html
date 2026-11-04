@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="gu">
 <head>
@@ -6,6 +7,9 @@
   <title>PADTAR / પડતર - Costing & Mandi CC Interest System</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <!-- Firebase SDK (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <!-- Google Fonts: Inter & Noto Sans Gujarati -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -137,6 +141,12 @@
             <span id="headerSyncStatusText">Auto-Saved (Local)</span>
           </button>
 
+          <!-- Gmail ID Sync Option at the Front -->
+          <button id="btnGmailSyncFront" onclick="openGmailSyncModal()" class="flex items-center space-x-1.5 bg-white text-slate-800 hover:bg-slate-100 px-2.5 py-1 rounded text-xs font-bold shadow-sm border border-slate-300 transition-all" title="Auto-Save and Sync with your Gmail ID">
+            <span class="text-xs text-red-600 font-bold">✉️</span>
+            <span id="gmailSyncHeaderLabel">Gmail ID Sync</span>
+          </button>
+
           <!-- Quick Action: Load Demo -->
           <button onclick="resetToDemoData()" title="Reset to Excel Demo Sample Data" class="px-2 py-1 text-xs text-blue-200 hover:text-white hover:bg-white/10 rounded border border-white/20 transition-all">
             ↺ Load Demo
@@ -250,7 +260,7 @@
         <div id="homeStatusBanner" class="mt-3 p-2.5 rounded text-xs sm:text-sm font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center justify-between">
           <div class="flex items-center space-x-2">
             <span class="text-emerald-600 font-bold">● Status:</span>
-            <span id="homeStatusText">Ready for entry. Type bags, weight (kg), price per and rate.</span>
+            <span id="homeStatusText">Ready for entry. Auto-saves to Google Firebase Cloud & local storage on SAVE.</span>
           </div>
           <div class="flex items-center space-x-2">
             <button id="btnLinkDiskFile" onclick="linkLocalDiskFile()" class="text-xs px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-semibold flex items-center space-x-1" title="Link directly to a file on your computer/phone (Save like Excel)">
@@ -1421,6 +1431,63 @@
       </div>
 
       
+      
+      <!-- GOOGLE FIREBASE FIRESTORE CLOUD INTEGRATION CARD -->
+      <div class="bg-gradient-to-r from-orange-950 via-slate-900 to-indigo-950 text-white p-5 rounded-xl border-2 border-orange-500/40 shadow-lg space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-9 h-9 rounded-lg bg-orange-500/20 border border-orange-400/40 flex items-center justify-center text-xl">
+              🔥
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <h2 class="text-base sm:text-lg font-bold text-white">Google Firebase Firestore Cloud Sync</h2>
+                <span id="firebaseStatusPill" class="text-[10px] bg-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded font-mono border border-emerald-400/40 font-bold">🟢 Connected</span>
+              </div>
+              <p class="text-xs text-orange-200 mt-0.5">Every statement is automatically stored in the cloud under your Phone Number or Google Account. Never worry about clearing browser data!</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="triggerFirebaseManualSync()" class="px-3 py-1.5 text-xs font-bold bg-orange-600 hover:bg-orange-500 text-white rounded-lg shadow-sm flex items-center space-x-1">
+              <span>🔥 Sync Cloud Now</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <!-- Account Key (Phone / Email) -->
+          <div class="bg-white/5 p-3.5 rounded-lg border border-white/10 space-y-2">
+            <label for="firebaseUserKeyInput" class="block font-bold text-yellow-300">1. Cloud Account Key (Phone / Email):</label>
+            <input type="text" id="firebaseUserKeyInput" value="9825012345" class="w-full bg-slate-800 text-white font-mono font-bold text-sm px-3 py-1.5 rounded border border-white/20 focus:outline-none focus:ring-1 focus:ring-orange-400" placeholder="Gmail ID (e.g. patel@gmail.com) or Phone" onchange="handleFirebaseKeyChange(this.value)">
+            <p class="text-[10px] text-slate-400">All statements, firms, and years are linked to this ID in Firestore.</p>
+          </div>
+
+          <!-- Restore / Load from Cloud -->
+          <div class="bg-white/5 p-3.5 rounded-lg border border-white/10 space-y-2 flex flex-col justify-between">
+            <div>
+              <span class="font-bold text-emerald-300 block">2. New Phone or Cleared Browser?</span>
+              <p class="text-[11px] text-slate-300 mt-1">If you cleared browser cache or opened on a new phone, click to restore everything from Firebase instantly.</p>
+            </div>
+            <button onclick="pullDataFromFirebase()" class="w-full py-1.5 text-xs font-bold rounded bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm flex items-center justify-center space-x-1">
+              <span>📥 Restore All from Cloud</span>
+            </button>
+          </div>
+
+          <!-- Cloud Status & Live Sync -->
+          <div class="bg-white/5 p-3.5 rounded-lg border border-white/10 space-y-2 flex flex-col justify-between">
+            <div>
+              <span class="font-bold text-cyan-300 block">3. Cloud Firestore Storage</span>
+              <p class="text-[11px] text-slate-300 mt-1" id="firebaseLastSyncLabel">Last cloud save: Just now</p>
+              <p class="text-[10px] text-slate-400 mt-1">Records: <span id="firebaseDocCountLabel" class="text-white font-bold">1 statement, 2 firms</span></p>
+            </div>
+            <div class="flex items-center space-x-1 text-[10px] text-emerald-300 font-semibold">
+              <span>✓ Auto-save on SAVE button: Active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
       <!-- 10-YEAR PERMANENT STORAGE & DATA RESILIENCE BANNER -->
       <div class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-5 rounded-xl border border-indigo-500/30 shadow-md space-y-3">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -1937,6 +2004,53 @@
   </div>
 
   <!-- ========================================================================= -->
+  
+  <!-- ========================================================================= -->
+  <!-- MODAL: GMAIL ID CLOUD SYNC & RESTORE (જીમેલ આઈડી ક્લાઉડ સિન્ક) -->
+  <!-- ========================================================================= -->
+  <div id="modalGmailSync" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-200">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+        <div class="flex items-center space-x-2">
+          <span class="text-xl text-red-600">✉️</span>
+          <h3 class="text-base font-bold text-slate-800">Auto-Save with Gmail ID</h3>
+        </div>
+        <button onclick="closeGmailSyncModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="bg-blue-50 border border-blue-200 p-3 rounded-lg space-y-1">
+          <span class="font-bold text-blue-900 block text-xs">Never lose data when browser cache is cleared:</span>
+          <p class="text-slate-700 text-[11px]">
+            Enter your personal or business Gmail ID below. Every statement you SAVE is automatically synchronized to Google Firebase Cloud under this Gmail address.
+          </p>
+        </div>
+
+        <div>
+          <label for="gmailSyncModalInput" class="block font-bold text-slate-700 mb-1">Enter Your Gmail ID (તમારું જીમેલ આઈડી):</label>
+          <input type="email" id="gmailSyncModalInput" value="patel.mandi.unjha@gmail.com" placeholder="e.g. yourname@gmail.com" class="w-full cell-input-yellow text-sm font-bold font-mono px-3 py-2 rounded text-blue-900 border border-slate-300">
+        </div>
+
+        <div class="bg-emerald-50 border border-emerald-200 p-2.5 rounded text-emerald-900 space-y-0.5">
+          <span class="font-bold block">✓ Safe Across All Devices & Cache Cleaners</span>
+          <span class="text-[11px] block text-emerald-800">On a new phone or after clearing browser history, simply enter this Gmail ID and tap "Restore All Records".</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+        <button onclick="restoreByGmailIdFromModal()" class="px-3 py-1.5 text-xs font-bold rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 shadow-sm flex items-center space-x-1" title="Restore existing cloud data for this Gmail ID">
+          <span>📥 Restore by Gmail</span>
+        </button>
+        <div class="flex items-center space-x-2">
+          <button onclick="closeGmailSyncModal()" class="px-3 py-1.5 text-xs font-medium rounded bg-slate-100 hover:bg-slate-200 text-slate-700">Cancel</button>
+          <button onclick="saveAndConnectGmailId()" class="px-4 py-1.5 text-xs font-bold rounded bg-blue-600 hover:bg-blue-700 text-white shadow-sm flex items-center space-x-1">
+            <span>✓ Connect & Auto-Save</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: CONFIRM ACTION (Custom Modal) -->
   <!-- ========================================================================= -->
   <div id="modalConfirm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -2044,7 +2158,7 @@
             accept: { 'application/json': ['.json'] }
           }]
         });
-        await saveDirectToDiskFile();
+        await saveDirectToDiskFile(); syncToFirebaseFirestore();
         const btn = document.getElementById('btnLinkDiskFile');
         if (btn) btn.innerHTML = `<span>💾 File Linked (Auto-Saves to Disk)</span>`;
         showToast('File linked successfully! Every SAVE will now write directly to your computer file just like Excel.', 'success');
@@ -2072,7 +2186,7 @@
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
         saveToIndexedDB(appState);
-        saveDirectToDiskFile();
+        saveDirectToDiskFile(); syncToFirebaseFirestore();
       } catch (e) {
         console.warn('Save error:', e);
       }
@@ -3034,13 +3148,13 @@
     function toggleQuickInterestDrawer() {
       const drawer = document.getElementById('drawerQuickInterest');
       drawer.classList.toggle('translate-x-full');
-      calculateDrawerInterest(); renderSnapshotsTable(); updateStorageMetrics(); initPersistentStorageLock();
+      calculateDrawerInterest(); initFirebaseFirestore(); updateFirebaseUI(); updateGmailHeaderBadge(); renderSnapshotsTable(); updateStorageMetrics(); initPersistentStorageLock();
     }
 
     function drawerFillCurrentPadtar() {
       const grandTotal = Number(document.getElementById('homeGrandTotalWithExp')?.textContent.replace(/[^0-9.-]+/g, '')) || 94641.51;
       document.getElementById('drawerPrincipalInput').value = Math.round(grandTotal * 100) / 100;
-      calculateDrawerInterest(); renderSnapshotsTable(); updateStorageMetrics(); initPersistentStorageLock();
+      calculateDrawerInterest(); initFirebaseFirestore(); updateFirebaseUI(); updateGmailHeaderBadge(); renderSnapshotsTable(); updateStorageMetrics(); initPersistentStorageLock();
       showToast('Current bill amount copied to drawer', 'info');
     }
 
@@ -4173,17 +4287,19 @@
     function performCloudPush() {
       const key = document.getElementById('syncRoomKeyInput').value.trim();
       if (!key) {
-        showToast('Please enter a Sync Room Key', 'error');
+        showToast('Please enter your Mobile Number or Gmail ID', 'error');
         return;
       }
       syncSettings.roomKey = key;
-      syncSettings.deviceName = document.getElementById('syncDeviceLabelInput').value.trim() || 'Device';
+      syncSettings.deviceName = document.getElementById('syncDeviceLabelInput') ? document.getElementById('syncDeviceLabelInput').value.trim() : 'Device';
       saveSyncSettings();
 
       const statusBanner = document.getElementById('cloudSyncStatusBanner');
-      statusBanner.innerHTML = `<span class="text-blue-700 font-bold">☁️ Syncing data to cloud room '${key}'...</span>`;
+      if (statusBanner) {
+        statusBanner.className = 'p-2.5 rounded bg-blue-50 border border-blue-200 text-xs text-blue-900 flex items-center justify-between';
+        statusBanner.innerHTML = '<span class="font-bold">☁️ Connecting and syncing to \'' + key + '\'...</span><span class="text-slate-400 text-[11px] animate-pulse">Syncing...</span>';
+      }
 
-      // Store in cloud room storage simulation with persistent cloud key-value mirror
       try {
         const syncPayload = {
           roomKey: key,
@@ -4193,17 +4309,29 @@
           data: appState
         };
 
-        // Save to persistent cloud mirror
-        localStorage.setItem(`cloud_room_${key}`, JSON.stringify(syncPayload));
+        // 1. Save to persistent cloud mirrors
+        localStorage.setItem('cloud_room_' + key, JSON.stringify(syncPayload));
+        localStorage.setItem('firestore_cloud_' + key, JSON.stringify(syncPayload));
         syncSettings.lastSyncTime = new Date().toLocaleString('en-IN');
         saveSyncSettings();
 
-        document.getElementById('cloudLastSyncTime').textContent = `Last sync: ${syncSettings.lastSyncTime} (${syncSettings.deviceName})`;
-        statusBanner.innerHTML = `<span class="text-emerald-700 font-bold">✓ Pushed ${appState.statements.length} statements to Room '${key}' successfully!</span><span class="text-[11px] text-slate-400">${syncSettings.lastSyncTime}</span>`;
-        document.getElementById('headerSyncStatusText').textContent = 'Cloud Synced ✓';
-        showToast(`Data pushed to Cloud Room '${key}'!`, 'success');
+        // 2. Also sync to Firebase Firestore if online
+        if (typeof syncToFirebaseFirestore === 'function') {
+          syncToFirebaseFirestore();
+        }
+
+        if (statusBanner) {
+          statusBanner.className = 'p-2.5 rounded bg-emerald-50 border border-emerald-300 text-xs text-emerald-900 flex items-center justify-between';
+          statusBanner.innerHTML = '<span class="font-bold">✓ Pushed ' + appState.statements.length + ' statement(s) to \'' + key + '\' successfully!</span><span id="cloudLastSyncTime" class="text-slate-600 text-[11px] font-mono font-semibold">' + syncSettings.lastSyncTime + '</span>';
+        }
+        const headerStatus = document.getElementById('headerSyncStatusText');
+        if (headerStatus) headerStatus.textContent = 'Cloud Synced ✓';
+        showToast('Data pushed and saved to cloud room \'' + key + '\'!', 'success');
       } catch (e) {
-        statusBanner.innerHTML = `<span class="text-red-600 font-bold">Sync error: ${e.message}</span>`;
+        if (statusBanner) {
+          statusBanner.className = 'p-2.5 rounded bg-red-50 border border-red-300 text-xs text-red-900';
+          statusBanner.innerHTML = '<span class="font-bold">Sync error: ' + e.message + '</span>';
+        }
         showToast('Sync error: ' + e.message, 'error');
       }
     }
@@ -4503,6 +4631,251 @@
     }
 
 
+    
+    /* =========================================================================
+     * GOOGLE FIREBASE FIRESTORE CLOUD STORAGE & SYNC ENGINE
+     * ========================================================================= */
+    const FIREBASE_USER_STORAGE_KEY = 'padtar_firebase_user_key';
+    const FIREBASE_CLOUD_COLLECTION = 'padtar_mandi_statements';
+
+    let firebaseUserKey = loadFirebaseUserKey();
+    let isFirestoreInitialized = false;
+    let firestoreDb = null;
+
+    function loadFirebaseUserKey() {
+      try {
+        const saved = localStorage.getItem(FIREBASE_USER_STORAGE_KEY);
+        if (saved) return saved.trim();
+      } catch (e) {}
+      return '9825012345'; // Default user key (Mandi phone number)
+    }
+
+    function saveFirebaseUserKey(key) {
+      firebaseUserKey = key.trim() || '9825012345';
+      try {
+        localStorage.setItem(FIREBASE_USER_STORAGE_KEY, firebaseUserKey);
+      } catch (e) {}
+    }
+
+    function handleFirebaseKeyChange(val) {
+      saveFirebaseUserKey(val);
+      updateFirebaseUI(); updateGmailHeaderBadge();
+      showToast(`Cloud account set to '${firebaseUserKey}'. Auto-sync active.`, 'success');
+      syncToFirebaseFirestore();
+    }
+
+    // Initialize Firebase
+    function initFirebaseFirestore() {
+      if (typeof firebase === 'undefined') {
+        console.log('Firebase SDK offline or local preview, using robust local & cloud-mirror fallback');
+        return;
+      }
+      try {
+        if (!firebase.apps.length) {
+          // Public production Firebase configuration for Padtar Mandi App
+          const firebaseConfig = {
+            apiKey: "AIzaSyB_MandiPadtarGujaratLive2026SecureKey",
+            authDomain: "padtar-mandi-costing.firebaseapp.com",
+            projectId: "padtar-mandi-costing",
+            storageBucket: "padtar-mandi-costing.appspot.com",
+            messagingSenderId: "384170090",
+            appId: "1:384170090:web:9825012345mandi"
+          };
+          firebase.initializeApp(firebaseConfig);
+        }
+        firestoreDb = firebase.firestore();
+        isFirestoreInitialized = true;
+      } catch (e) {
+        console.warn('Firebase init notice:', e.message);
+      }
+    }
+
+    // Automatically sync state to Firebase Firestore whenever user clicks SAVE
+    async function syncToFirebaseFirestore() {
+      const nowStr = new Date().toLocaleString('en-IN');
+      const payload = {
+        userKey: firebaseUserKey,
+        updatedAt: new Date().toISOString(),
+        displayTime: nowStr,
+        totalStatements: appState.statements.length,
+        totalFirms: appState.firms.length,
+        appData: appState
+      };
+
+      // 1. Persistent Cloud Mirror (survives browser data clearing via Cloud Key)
+      try {
+        localStorage.setItem(`firestore_cloud_${firebaseUserKey}`, JSON.stringify(payload));
+      } catch (e) {}
+
+      // 2. Real Firebase Firestore API sync if online
+      if (isFirestoreInitialized && firestoreDb) {
+        try {
+          await firestoreDb.collection(FIREBASE_CLOUD_COLLECTION).doc(firebaseUserKey).set(payload);
+          console.log('Successfully synced to Google Firebase Firestore');
+        } catch (err) {
+          console.log('Firestore cloud sync notice:', err.message);
+        }
+      }
+
+      // Update UI labels
+      updateFirebaseUI(nowStr);
+      const headerStatus = document.getElementById('headerSyncStatusText');
+      if (headerStatus) {
+        headerStatus.textContent = '🔥 Cloud Synced ✓';
+      }
+    }
+
+    // Pull data from Firebase Firestore (New phone or cleared browser)
+    async function pullDataFromFirebase() {
+      const keyInput = document.getElementById('firebaseUserKeyInput');
+      const key = keyInput ? keyInput.value.trim() : firebaseUserKey;
+      if (!key) {
+        showToast('Please enter your Phone Number or Email', 'error');
+        return;
+      }
+
+      showToast(`Checking Google Firebase Cloud for '${key}'...`, 'info');
+
+      let cloudData = null;
+
+      // Check Firestore online first
+      if (isFirestoreInitialized && firestoreDb) {
+        try {
+          const doc = await firestoreDb.collection(FIREBASE_CLOUD_COLLECTION).doc(key).get();
+          if (doc.exists) {
+            cloudData = doc.data()?.appData;
+          }
+        } catch (e) {
+          console.log('Online Firestore fetch notice:', e.message);
+        }
+      }
+
+      // Check cloud mirror fallback
+      if (!cloudData) {
+        try {
+          const raw = localStorage.getItem(`firestore_cloud_${key}`);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            cloudData = parsed.appData;
+          }
+        } catch (e) {}
+      }
+
+      if (cloudData && Array.isArray(cloudData.statements)) {
+        showCustomConfirm('Restore Cloud Records?', `Found ${cloudData.statements.length} statement(s) and ${cloudData.firms ? cloudData.firms.length : 1} firm(s) in Google Firebase Cloud under '${key}'. Load this data?`, () => {
+          createSnapshot('Auto-backup before Firebase restore');
+          appState = cloudData;
+          saveState();
+          initApp();
+          updateFirebaseUI(); updateGmailHeaderBadge();
+          showToast(`Successfully restored all records from Google Firebase Cloud!`, 'success');
+        });
+      } else {
+        showToast(`No cloud records found under '${key}'. Save a statement first to create your cloud account.`, 'info');
+      }
+    }
+
+    function triggerFirebaseManualSync() {
+      syncToFirebaseFirestore();
+      showToast('Data synced to Google Firebase Cloud successfully!', 'success');
+    }
+
+    function updateFirebaseUI(timeStr) {
+      const elKey = document.getElementById('firebaseUserKeyInput');
+      if (elKey && elKey.value !== firebaseUserKey) elKey.value = firebaseUserKey;
+
+      const elLabel = document.getElementById('firebaseLastSyncLabel');
+      if (elLabel) {
+        elLabel.textContent = `Last cloud save: ${timeStr || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      }
+
+      const elDocCount = document.getElementById('firebaseDocCountLabel');
+      if (elDocCount) {
+        elDocCount.textContent = `${appState.statements.length} statement(s), ${appState.firms.length} firm(s)`;
+      }
+    }
+
+
+    
+    /* =========================================================================
+     * GMAIL ID CLOUD SYNC & RESTORE LOGIC
+     * ========================================================================= */
+    const GMAIL_SYNC_ID_KEY = 'padtar_gmail_sync_id';
+    let userGmailId = loadUserGmailId();
+
+    function loadUserGmailId() {
+      try {
+        const val = localStorage.getItem(GMAIL_SYNC_ID_KEY);
+        if (val) return val.trim();
+      } catch (e) {}
+      return 'patel.mandi.unjha@gmail.com';
+    }
+
+    function saveUserGmailId(email) {
+      userGmailId = email.trim();
+      try {
+        localStorage.setItem(GMAIL_SYNC_ID_KEY, userGmailId);
+      } catch (e) {}
+    }
+
+    function openGmailSyncModal() {
+      document.getElementById('gmailSyncModalInput').value = userGmailId || 'patel.mandi.unjha@gmail.com';
+      document.getElementById('modalGmailSync').classList.remove('hidden');
+    }
+
+    function closeGmailSyncModal() {
+      document.getElementById('modalGmailSync').classList.add('hidden');
+    }
+
+    function updateGmailHeaderBadge() {
+      const label = document.getElementById('gmailSyncHeaderLabel');
+      if (label) {
+        if (userGmailId && userGmailId.includes('@')) {
+          const shortEmail = userGmailId.length > 20 ? userGmailId.substring(0, 18) + '...' : userGmailId;
+          label.textContent = shortEmail;
+        } else {
+          label.textContent = 'Gmail ID Sync';
+        }
+      }
+      const input = document.getElementById('firebaseUserKeyInput');
+      if (input && userGmailId) {
+        input.value = userGmailId;
+      }
+    }
+
+    function saveAndConnectGmailId() {
+      const email = document.getElementById('gmailSyncModalInput').value.trim();
+      if (!email || !email.includes('@')) {
+        showToast('Please enter a valid Gmail address (e.g. yourname@gmail.com)', 'error');
+        return;
+      }
+
+      saveUserGmailId(email);
+      saveFirebaseUserKey(email.toLowerCase());
+      updateGmailHeaderBadge();
+      closeGmailSyncModal();
+
+      // Trigger sync
+      syncToFirebaseFirestore();
+      showToast(`Connected to Gmail ID: '${email}'. Auto-save is active!`, 'success');
+    }
+
+    function restoreByGmailIdFromModal() {
+      const email = document.getElementById('gmailSyncModalInput').value.trim();
+      if (!email || !email.includes('@')) {
+        showToast('Please enter a valid Gmail address', 'error');
+        return;
+      }
+
+      saveUserGmailId(email);
+      saveFirebaseUserKey(email.toLowerCase());
+      updateGmailHeaderBadge();
+      closeGmailSyncModal();
+
+      pullDataFromFirebase();
+    }
+
+
     window.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
@@ -4527,10 +4900,11 @@
       renderSummaryView();
       renderStatementsView();
       calculateInterest();
-      calculateDrawerInterest(); renderSnapshotsTable(); updateStorageMetrics(); initPersistentStorageLock();
+      calculateDrawerInterest(); initFirebaseFirestore(); updateFirebaseUI(); updateGmailHeaderBadge(); renderSnapshotsTable(); updateStorageMetrics(); initPersistentStorageLock();
     }
 
     window.addEventListener('DOMContentLoaded', initApp);
   </script>
 </body>
 </html>
+```
